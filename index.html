@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Employee Productivity Snapshot</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; color: #1f2937; }
+    header { background: linear-gradient(135deg, #2563eb, #16a34a); color: white; padding: 32px 24px; text-align: center; }
+    header h1 { margin: 0 0 8px; }
+    main { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .insight { border-left: 6px solid #eab308; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background: #2563eb; color: white; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .flag { background: #fef9c3; color: #854d0e; padding: 4px 10px; border-radius: 999px; font-size: 0.85em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Employee Productivity Snapshot</h1>
+    <p>Simulated sample data: 15 employees, 6 weeks</p>
+  </header>
+
+  <main>
+    <section class="card insight">
+      <h2>Top insight</h2>
+      <p id="insightText"></p>
+    </section>
+
+    <section class="card">
+      <h2>Tasks completed per week, per employee</h2>
+      <canvas id="weeklyChart" height="100"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Average time-to-completion per task</h2>
+      <table>
+        <thead><tr><th>Employee</th><th>Avg hours per task</th></tr></thead>
+        <tbody id="avgBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const data = {
+  "weeks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "employees": [
+    {
+      "employee_id": "emp_01",
+      "weekly_counts": [
+        2,
+        6,
+        2,
+        4,
+        2,
+        3
+      ],
+      "avg_hours": 4.5
+    },
+    {
+      "employee_id": "emp_02",
+      "weekly_counts": [
+        4,
+        3,
+        5,
+        7,
+        4,
+        0
+      ],
+      "avg_hours": 2.1
+    },
+    {
+      "employee_id": "emp_03",
+      "weekly_counts": [
+        10,
+        10,
+        10,
+        6,
+        7,
+        10
+      ],
+      "avg_hours": 3.4
+    },
+    {
+      "employee_id": "emp_04",
+      "weekly_counts": [
+        11,
+        11,
+        7,
+        9,
+        7,
+        11
+      ],
+      "avg_hours": 3.1
+    },
+    {
+      "employee_id": "emp_05",
+      "weekly_counts": [
+        10,
+        9,
+        12,
+        9,
+        10,
+        10
+      ],
+      "avg_hours": 4.2
+    },
+    {
+      "employee_id": "emp_06",
+      "weekly_counts": [
+        12,
+        13,
+        12,
+        10,
+        13,
+        11
+      ],
+      "avg_hours": 5.0
+    },
+    {
+      "employee_id": "emp_07",
+      "weekly_counts": [
+        7,
+        5,
+        3,
+        6,
+        0,
+        0
+      ],
+      "avg_hours": 2.4
+    },
+    {
+      "employee_id": "emp_08",
+      "weekly_counts": [
+        9,
+        9,
+        7,
+        9,
+        8,
+        7
+      ],
+      "avg_hours": 4.1
+    },
+    {
+      "employee_id": "emp_09",
+      "weekly_counts": [
+        10,
+        4,
+        7,
+        8,
+        9,
+        6
+      ],
+      "avg_hours": 2.0
+    },
+    {
+      "employee_id": "emp_10",
+      "weekly_counts": [
+        13,
+        14,
+        10,
+        9,
+        10,
+        13
+      ],
+      "avg_hours": 3.8
+    },
+    {
+      "employee_id": "emp_11",
+      "weekly_counts": [
+        1,
+        5,
+        2,
+        5,
+        0,
+        3
+      ],
+      "avg_hours": 2.0
+    },
+    {
+      "employee_id": "emp_12",
+      "weekly_counts": [
+        14,
+        13,
+        10,
+        8,
+        9,
+        9
+      ],
+      "avg_hours": 3.2
+    },
+    {
+      "employee_id": "emp_13",
+      "weekly_counts": [
+        5,
+        4,
+        6,
+        3,
+        5,
+        4
+      ],
+      "avg_hours": 3.2
+    },
+    {
+      "employee_id": "emp_14",
+      "weekly_counts": [
+        5,
+        8,
+        10,
+        6,
+        8,
+        8
+      ],
+      "avg_hours": 6.0
+    },
+    {
+      "employee_id": "emp_15",
+      "weekly_counts": [
+        8,
+        11,
+        12,
+        10,
+        10,
+        9
+      ],
+      "avg_hours": 1.6
+    }
+  ],
+  "struggling_employee": "emp_07",
+  "summary": "emp_07's average time per task is 2.4 hours, which is completely normal compared to the rest of the team. But their task count dropped to 0 in weeks 5 and 6, after averaging around 5-6 tasks a week before that. A manager looking only at the average-hours table would see nothing wrong. Only the weekly chart shows that emp_07 stopped completing tasks entirely."
+};
+ document.getElementById("insightText").textContent = data.summary;
+ const weeks = data.weeks.map(w => "Week " + w);
+
+const datasets = data.employees.map(emp => {
+  const isStruggling = emp.employee_id === data.struggling_employee;
+  return {
+    label: emp.employee_id,
+    data: emp.weekly_counts,
+    borderColor: isStruggling ? "#eab308" : "#d1d5db",
+    backgroundColor: "transparent",
+    borderWidth: isStruggling ? 3 : 1,
+    tension: 0.3,
+    pointRadius: isStruggling ? 3 : 0
+  };
+});
+
+new Chart(document.getElementById("weeklyChart"), {
+  type: "line",
+  data: { labels: weeks, datasets },
+  options: {
+    scales: { y: { min: 0 } },
+    plugins: { legend: { display: false } }
+  }
+});
+const avgBody = document.getElementById("avgBody");
+const sorted = [...data.employees].sort((a, b) => b.avg_hours - a.avg_hours);
+sorted.forEach(emp => {
+  const flag = emp.employee_id === data.struggling_employee ? ' <span class="flag">Check in</span>' : "";
+  avgBody.innerHTML += `<tr><td>${emp.employee_id}${flag}</td><td>${emp.avg_hours.toFixed(1)}</td></tr>`;
+});
+ </script>
+</body>
+</html>
